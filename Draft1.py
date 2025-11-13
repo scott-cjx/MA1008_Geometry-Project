@@ -4,11 +4,11 @@ import turtle as T
 import time
 import random
 
-def random_color():
-   return (random.random(), random.random(), random.random())
-
 T.hideturtle()
 Sc = T.Screen()
+
+def random_color():
+   return (random.random(), random.random(), random.random())
 
 def get_point(i, j):  # Return polygon vertex as left mouse button pressed
    T.goto(i, j)
@@ -20,7 +20,7 @@ def polygon(i, j):  # End polygon input, display and store it.
    global points
    T.pu()  # T.pu() same as T.penup()
    T.color(random_color())
-   T.begin_fill()
+   # T.begin_fill()
    if len(points) < 3:
       #if there are less than 3 points, display an error message below the last point
       last_point = points[-1]
@@ -53,16 +53,13 @@ def polygon(i, j):  # End polygon input, display and store it.
       T.write("need at least 3 points, next point continue", align=alignment, font=("Arial", 12, "normal"))
       time.sleep(1.5)
       T.undo()
-
       return
-
    else: 
       for p in points:
          T.goto(p)
          T.pd()
    T.goto(points[0])
-   T.end_fill()
-   
+   # T.end_fill()
    polys.append(points) # store the polygon
    points = []          # Re-initialise points for new polygon
    T.pu()
