@@ -1,11 +1,7 @@
-# Program demosntrating using the mouse to input and display a polygon
-
+#
 import turtle as T
 import time
 import random
-
-T.hideturtle()
-Sc = T.Screen()
 
 def random_color():
    return (random.random(), random.random(), random.random())
@@ -16,13 +12,8 @@ def get_point(i, j):  # Return polygon vertex as left mouse button pressed
    T.pd()  # T.pd() same as T.pendown()
    T.dot(5)
 
-def polygon(i, j):  # End polygon input, display and store it.
-   global points
-   T.pu()  # T.pu() same as T.penup()
-   T.color(random_color())
-   # T.begin_fill()
-   if len(points) < 3:
-      #if there are less than 3 points, display an error message below the last point
+def warning_message(points):
+   #if there are less than 3 points, display an error message below the last point
       last_point = points[-1]
       msg_x = last_point[0]
       msg_y = last_point[1]
@@ -54,37 +45,40 @@ def polygon(i, j):  # End polygon input, display and store it.
       time.sleep(1.5)
       T.undo()
       return
+
+def polygon(i, j):  
+   global points
+   # End polygon input, display and store it.
+   T.pu()  
+   T.color(random_color())
+   
+   #Warning Message Feature for points less than 3 (user validation)
+   if len(points) < 3:
+      warning_message(points)
+      return
    else: 
       for p in points:
          T.goto(p)
          T.pd()
    T.goto(points[0])
+   
    # T.end_fill()
-   polys.append(points) # store the polygon
+   polygons.append(points) # store the polygon
    points = []          # Re-initialise points for new polygon
    T.pu()
 
-def Quit():
-   key = input("Press Q again to quit graphics. Any other key to continue. ")
-   if key == "Q":
-      T.bye()
-      print("\nExiting graphics.")
-
-def main():
-   
+def quit 
+def input_event():
    Sc.onclick(get_point, 1)  # Left mouse button press
    Sc.onclick(polygon, 3)    # Right mouse button press
-   Sc.onkey(Quit, "Q")       # Q key press  
    Sc.listen()               # Listen for event 
    Sc.mainloop()             # Stay in graphical interation
 
-   print("\nHere are the polygons: ")
-   for P in polys:   # List the polygons entered
-      print("\n", P)
-
 # Do some initialisation
-points = []
-polys = []
+T.hideturtle()
+Sc = T.Screen()
+
+#Screen setup
 T.color(random_color())
 T.pu()
 T.penup()
@@ -92,10 +86,11 @@ T.goto(0, 290)  # near top
 T.color("black")
 T.write("Left-click: add point | Right-click: finish polygon | Q: quit", 
         align="center", font=("Arial", 12, "normal"))
-#for debugging
-T.goto(0, 0)
-T.color("black")
-T.write(".", align="center", font=("Arial", 12, "normal"))
+points = []
+polygons = []
+input_event()  # The main program
+print(polygons) #for testing
 
 
-main()  # The main program
+
+#Input from text (?)
