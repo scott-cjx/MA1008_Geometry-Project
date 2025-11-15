@@ -107,7 +107,7 @@ def input_event_manual():
             x, y = map(float, coords_input.split(','))
             x = max(-500, min(500, x))
             y = max(-400, min(400, y))
-            
+            # print("test")
             
             points.append((x, y))
             T.goto(x, y)
