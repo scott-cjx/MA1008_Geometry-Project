@@ -67,16 +67,29 @@ def polygon(i, j):
    points = []          # Re-initialise points for new polygon
    T.pu()
 
-def quit 
+def clear_screen(i, j):
+   Sc.resetscreen()
+   print("Done drawing - Click window to see results")
+   T.color(random_color())
+   T.pu()
+   T.penup()
+   T.goto(0, 290)  # near top
+   T.color("black")
+   T.write("Left-click: add point | Right-click: finish polygon | Q: quit", 
+         align="center", font=("Arial", 12, "normal"))
+
 def input_event():
    Sc.onclick(get_point, 1)  # Left mouse button press
    Sc.onclick(polygon, 3)    # Right mouse button press
+   Sc.onclick(clear_screen, 2)       # Middle mouse button press
    Sc.listen()               # Listen for event 
    Sc.mainloop()             # Stay in graphical interation
 
 # Do some initialisation
 T.hideturtle()
 Sc = T.Screen()
+T.setup(width=0.75, height=0.6)  # full screen
+T.screensize(1000, 800)
 
 #Screen setup
 T.color(random_color())

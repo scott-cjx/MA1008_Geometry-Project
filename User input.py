@@ -3,14 +3,104 @@ import turtle as T
 import time
 import random
 
-def random_color():
-   return (random.random(), random.random(), random.random())
+points = []
+polygons = []
 
 def get_point(i, j):  # Return polygon vertex as left mouse button pressed
+   global points
+   canvas_width = 500
+   canvas_height = 400
+   
+   i = max(-canvas_width, min(canvas_width, i))
+   j = max(-canvas_height, min(canvas_height, j))
+   
    T.goto(i, j)
    points.append((i, j))
    T.pd()  # T.pd() same as T.pendown()
    T.dot(5)
+   
+
+def input_event_manual():
+    global points, polygons
+    
+    while True:
+        try:
+            print("================== Manual Point Input Mode ================")
+            print("Enter Coordinates as x,y (type 'done' to finish current polygon, 'quit' to exit): ")
+            print("Canvas Size is 1000 x 800 (x: -500 to 500, y: -400 to 400), Any values Beyond will be Clamped")
+            
+            x = float(input("Enter x coordinate (or 'done'/'quit'): "))
+            y = float(input("Enter y coordinate (or 'done'/'quit'): "))
+            
+            # Clamp values to canvas size
+            x = max(-500, min(500, x))
+            y = max(-400, min(400, y))
+            
+            points.append((x, y))
+            T.goto(x, y)
+            T.pd()
+            T.dot(5)
+            print(f"Point added: ({x}, {y})")
+
+        except ValueError as e:
+            if "could not convert" in str(e).lower() or x == 'done' or y == 'done':
+                print("Invalid input. Please enter coordinates as x,y or type 'done' or 'quit'.")
+                finish_polygon(points[-1][0], points[-1][1])
+                
+                cont = input("Add another polygon (y/n)? ")
+                if cont.lower() != 'y':
+                    break
+        
+                
+                          
+
+def finish_polygon(i, j):
+   global polygons
+   global points
+   # End polygon input, display and store it.
+   T.pu()  
+   T.color(random_color())
+   print("points currently: ", points)
+   #Warning Message Feature for points less than 3 (user validation)
+   if len(points) < 3:
+      warning_message(points)
+      return
+   else: 
+      for p in points: 
+         T.goto(p)
+         T.pd()
+   T.goto(points[0])
+   
+   # T.end_fill()
+   polygons.append(points) # store the polygon
+   points = []          # Re-initialise points for new polygon
+   T.pu()
+      
+def input_event():
+   Sc.onclick(get_point, 1)  # Left mouse button press
+   Sc.onclick(finish_polygon, 3)    # Right mouse button press
+   Sc.onclick(Quit, 2)
+   Sc.listen()               # Listen for event 
+
+def input_mode_menu():
+    print("================= Polygon Input Mode ================")
+    print("1. Mouse-click (left-click points, right-click finish polygon)")
+    print("2. Manual input (type point coordinates) (x, y): ")
+    mode = int(input("Select input mode (1 or 2): "))
+
+'''             
+HELPER FUNCTIONS FOR POLYGON PROCESSING
+'''
+#---------------------------------------------------------------------------------
+
+def Quit():
+   key = input("Press Q again to quit graphics. Any other key to continue: ")
+   if key == "Q":
+      print("\nExiting graphics.")
+      
+def random_color():
+   return (random.random(), random.random(), random.random())
+
 
 def warning_message(points):
     global Sc
@@ -47,33 +137,28 @@ def warning_message(points):
     T.undo()
     return
 
-def polygon(i, j):
-   global polygons
-   global points
-   # End polygon input, display and store it.
-   T.pu()  
-   T.color(random_color())
-   
-   #Warning Message Feature for points less than 3 (user validation)
-   if len(points) < 3:
-      warning_message(points)
-      return
-   else: 
-      for p in points:
-         T.goto(p)
-         T.pd()
-   T.goto(points[0])
-   
-   # T.end_fill()
-   polygons.append(points) # store the polygon
-   points = []          # Re-initialise points for new polygon
-   T.pu()
-   
-def input_event():
-   Sc.onclick(get_point, 1)  # Left mouse button press
-   Sc.onclick(polygon, 3)    # Right mouse button press
-   Sc.listen()               # Listen for event 
-   Sc.mainloop()             # Stay in graphical interation
+
+def draw_dashed_line(x1, y1, x2, y2, dash_length=5, gap_length=5):
+    #calc eucledian dist.
+    distance = ((x2 - x1)**2 + (y2 - y1)**2)**0.5
+
+    if distance == 0:
+        return
+
+    num_dashes = int(distance / (dash_length + gap_length))
+    dx = (x2 - x1) / distance
+    dy = (y2 - y1) / distance
+    
+    for i in range(num_dashes):
+        start_x = x1 + (dash_length + gap_length) * i * dx
+        start_y = y1 + (dash_length + gap_length) * i * dy
+        end_x = start_x + dash_length * dx
+        end_y = start_y + dash_length * dy
+        
+        T.pu()
+        T.goto(start_x, start_y)
+        T.pd()
+        T.goto(end_x, end_y)
 
 #---------------------------------------------------------------------------------
 def get_edges(poly):
@@ -332,40 +417,59 @@ def display_segments(polygon):
     T.update()
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------
-# Do some initialisation
-T.hideturtle()
-
-#Screen setup
-T.color(random_color())
-T.pu()
-T.penup()
-T.goto(0, 290)  # near top
-T.color("black")
-T.write("Left-click: add point | Right-click: finish polygon | Q: quit", 
-        align="center", font=("Arial", 12, "normal"))
-points = []
-polygons = []
-input_event()  # The main program
-print(polygons) #for testing
-
-#Main program
-for i in range(len(polygons)-1):
-    poly1 = polygons[i]
-    poly2 = polygons[i+1]
+def screen_setup():
     
-    segments_poly1, segments_poly2, intersections = pre_process_polygon(poly1, poly2)
-    counts, insideout_results1 = insideout_check(segments_poly1, poly2)
-    counts, insideout_results2 = insideout_check(segments_poly2, poly1)
-    final_segments_poly1, final_segments_poly2 = keep_or_discard(segments_poly1, segments_poly2, insideout_results1, insideout_results2, "u")
-    # final_segments_poly1, final_segments_poly2 = keep_or_discard(segments_poly2, segments_poly1, insideout_results1, insideout_results2, "-")
-    print("final_segments_poly1:", final_segments_poly1)
-    print("final_segments_poly2:", final_segments_poly2)
+    T.hideturtle()
+    
+    T.setup(width=0.75, height=0.6)
+    T.screensize(1000, 800)
 
-    flat1 = flatten(final_segments_poly1)
-    flat2 = flatten(final_segments_poly2)
-    unified_polygon = ordered_segments(flat1, flat2)
-    print("Unified Polygon Segments:", unified_polygon)
-    display_segments(unified_polygon)
+    # Draw canvas outline for debugging
+    T.pencolor("red")
+    T.pensize(2)
+    T.pu()
+    T.goto(-500, -400)  # Bottom-left corner
+    T.pd()
+    T.goto(500, -400)   # Bottom-right
+    T.goto(500, 400)    # Top-right
+    T.goto(-500, 400)   # Top-left
+    T.goto(-500, -400)  # Back to start
+    T.pu()
+
+    #Screen setup
+    T.color(random_color())
+    T.pu()
+    T.penup()
+    T.goto(0, 290)  # near top
+    T.color("black")
+    T.write("Left-click: add point | Right-click: finish polygon | Q: quit", 
+            align="center", font=("Arial", 12, "normal"))
+
+screen_setup()
+Sc = T.Screen()
+input_event()  # The main program
+print("Program is successfull uptil now, polygons:", polygons)
+
+def main_program(polygons):
+    for i in range(len(polygons)-1):
+        poly1 = polygons[i]
+        poly2 = polygons[i+1]
+        
+        segments_poly1, segments_poly2, intersections = pre_process_polygon(poly1, poly2)
+        counts, insideout_results1 = insideout_check(segments_poly1, poly2)
+        counts, insideout_results2 = insideout_check(segments_poly2, poly1)
+        final_segments_poly1, final_segments_poly2 = keep_or_discard(segments_poly1, segments_poly2, insideout_results1, insideout_results2, "u")
+        # final_segments_poly1, final_segments_poly2 = keep_or_discard(segments_poly2, segments_poly1, insideout_results1, insideout_results2, "-")
+        print("final_segments_poly1:", final_segments_poly1)
+        print("final_segments_poly2:", final_segments_poly2)
+
+        flat1 = flatten(final_segments_poly1)
+        flat2 = flatten(final_segments_poly2)
+        unified_polygon = ordered_segments(flat1, flat2)
+        print("Unified Polygon Segments:", unified_polygon)
+        display_segments(unified_polygon)
+
+main_program(polygons)
 
 T.done()
 
